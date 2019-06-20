@@ -32,6 +32,7 @@ import { ReviewCommentResolver } from './comment-period/review-comment/review-co
 import { TopicResolver } from './valued-components/add-vc/topic-resolver.services';
 import { ValuedComponentsResolver } from './valued-components/valued-components-resolver.services';
 import { ProjectUpdatesResolver } from './project-updates/project-updates-resolver.services';
+import { ProjectFoldersComponent } from './project-folders/project-folders.component';
 
 const routes: Routes = [
   {
@@ -58,6 +59,13 @@ const routes: Routes = [
       {
         path: 'project-documents',
         component: ProjectDocumentsComponent,
+        resolve: {
+          documents: DocumentsResolver
+        }
+      },
+      {
+        path: 'project-folders',
+        component: ProjectFoldersComponent,
         resolve: {
           documents: DocumentsResolver
         }

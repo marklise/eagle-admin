@@ -103,4 +103,9 @@ export class SidebarComponent implements OnInit {
     this.storageService.state.projectDocumentTableParams = null;
     this.router.navigate(['p', currentProjectId, 'project-documents']);
   }
+
+  goToFolders(currentProjectId) {
+    this.storageService.state.projectDocumentTableParams = null;
+    this.router.navigate(['p', currentProjectId, 'project-folders']);
+  }
 }

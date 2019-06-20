@@ -45,6 +45,7 @@ import { AddDocumentComponent } from './comment-periods/add-edit-comment-period/
 import { AddDocumentTableRowsComponent } from './comment-periods/add-edit-comment-period/add-documents/add-document-table-rows/add-document-table-rows.component';
 import { AddCommentComponent } from './comment-period/add-comment/add-comment.component';
 import { CommentPeriodBannerComponent } from './comment-period-banner/comment-period-banner.component';
+import { ProjectFoldersComponent } from './project-folders/project-folders.component';
 
 @NgModule({
   imports: [
@@ -89,7 +90,8 @@ import { CommentPeriodBannerComponent } from './comment-period-banner/comment-pe
     TopicTableRowsComponent,
     UploadComponent,
     ValuedComponentsComponent,
-    ValuedComponentTableRowsComponent
+    ValuedComponentTableRowsComponent,
+    ProjectFoldersComponent
   ],
   entryComponents: [
     AddDocumentTableRowsComponent,

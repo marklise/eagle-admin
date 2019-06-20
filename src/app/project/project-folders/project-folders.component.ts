@@ -1,34 +1,32 @@
-import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
-import { DialogService } from 'ng2-bootstrap-modal';
-import { Router, ActivatedRoute } from '@angular/router';
-import { Subject, forkJoin } from 'rxjs';
-
-import { Document } from 'app/models/document';
-import { SearchTerms } from 'app/models/search';
-
-import { ApiService } from 'app/services/api';
-import { DocumentService } from 'app/services/document.service';
-import { SearchService } from 'app/services/search.service';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { StorageService } from 'app/services/storage.service';
-
-import { DocumentTableRowsComponent } from './project-document-table-rows/project-document-table-rows.component';
-
-import { ConfirmComponent } from 'app/confirm/confirm.component';
+import { ActivatedRoute, Router } from '@angular/router';
+import { Subject, forkJoin } from 'rxjs';
 import { TableObject } from 'app/shared/components/table-template/table-object';
 import { TableParamsObject } from 'app/shared/components/table-template/table-params-object';
 import { TableTemplateUtils } from 'app/shared/utils/table-template-utils';
+import { Document } from 'app/models/document';
+import { DocumentTableRowsComponent } from '../project-documents/project-document-table-rows/project-document-table-rows.component';
+import { DocumentService } from 'app/services/document.service';
+import { ApiService } from 'app/services/api';
+import { DialogService } from 'ng2-bootstrap-modal';
+import { ConfirmComponent } from 'app/confirm/confirm.component';
 
 @Component({
-  selector: 'app-project-documents',
-  templateUrl: './project-documents.component.html',
-  styleUrls: ['./project-documents.component.scss']
+  selector: 'app-project-folders',
+  templateUrl: './project-folders.component.html',
+  styleUrls: ['./project-folders.component.scss']
 })
-export class ProjectDocumentsComponent implements OnInit, OnDestroy {
-  public terms = new SearchTerms();
-  private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
+export class ProjectFoldersComponent implements OnInit {
   public documents: Document[] = null;
+  public currentProject;
+  private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
+  public tableParams: TableParamsObject = new TableParamsObject();
+  public selectedCount = 0;
   public loading = true;
-
+  public path: any[];
+  public canPublish;
+  public canUnpublish;
   public documentTableData: TableObject;
   public documentTableColumns: any[] = [
     {
@@ -64,25 +62,16 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
     }
   ];
 
-  public selectedCount = 0;
-
-  public currentProject;
-  public canPublish;
-  public canUnpublish;
-
-  public tableParams: TableParamsObject = new TableParamsObject();
-
   constructor(
-    private _changeDetectionRef: ChangeDetectorRef,
-    private api: ApiService,
-    private dialogService: DialogService,
-    private documentService: DocumentService,
-    private route: ActivatedRoute,
-    private router: Router,
-    private searchService: SearchService,
     private storageService: StorageService,
-    private tableTemplateUtils: TableTemplateUtils
-  ) { }
+    private router: Router,
+    private documentService: DocumentService,
+    private dialogService: DialogService,
+    private api: ApiService,
+    private _changeDetectionRef: ChangeDetectorRef,
+    private tableTemplateUtils: TableTemplateUtils,
+    private route: ActivatedRoute,
+    ) { }
 
   ngOnInit() {
     if (this.storageService.state.projectDocumentTableParams == null) {
@@ -106,6 +95,26 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
       this.tableParams.keywords = decodeURIComponent(this.tableParams.keywords);
     }
     this.currentProject = this.storageService.state.currentProject.data;
+    console.log("CURR:", this.currentProject.directoryStructure)
+
+    let TreeModel = require('tree-model');
+    let tree = new TreeModel();
+    let path = tree.parse(this.currentProject.directoryStructure);
+
+    console.log(path);
+    let nodes = path.getPath();
+    let paths = [];
+    nodes.map(n => {
+      console.log("FUCK:", n.model.name);
+      if (n.children.length > 0) {
+        n.children.map(c => {
+          console.log("C:", c.model.name);
+          paths.push(c);
+        })
+      }
+    })
+    // this.path = path.model.name;
+    this.path = paths;
     this._changeDetectionRef.detectChanges();
 
     this.route.data
@@ -128,6 +137,73 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
           this.router.navigate(['/search']);
         }
       });
+  }
+
+  setRowData() {
+    let documentList = [];
+    if (this.documents && this.documents.length > 0) {
+      this.documents.forEach(document => {
+        documentList.push(
+          {
+            displayName: document.displayName,
+            documentFileName: document.documentFileName,
+            datePosted: document.datePosted,
+            status: document.read.includes('public') ? 'Published' : 'Not Published',
+            type: document.type,
+            milestone: document.milestone,
+            _id: document._id,
+            project: document.project,
+            read: document.read
+          }
+        );
+      });
+      this.documentTableData = new TableObject(
+        DocumentTableRowsComponent,
+        documentList,
+        this.tableParams
+      );
+    }
+  }
+
+  isEnabled(button) {
+    switch (button) {
+      case 'copyLink':
+        return this.selectedCount === 1;
+      case 'publish':
+        return this.selectedCount > 0 && this.canPublish;
+      case 'unpublish':
+        return this.selectedCount > 0 && this.canUnpublish;
+      default:
+        return this.selectedCount > 0;
+    }
+  }
+
+  updateSelectedRow(count) {
+    this.selectedCount = count;
+    this.setPublishUnpublish();
+  }
+
+  setPublishUnpublish() {
+    this.canPublish = false;
+    this.canUnpublish = false;
+    for (let document of this.documentTableData.data) {
+      if (document.checkbox) {
+        if (document.read.includes('public')) {
+          this.canUnpublish = true;
+        } else {
+          this.canPublish = true;
+        }
+      }
+
+      if (this.canPublish && this.canUnpublish) {
+        return;
+      }
+    }
+  }
+
+  ngOnDestroy() {
+    this.ngUnsubscribe.next();
+    this.ngUnsubscribe.complete();
   }
 
   public selectAction(action) {
@@ -210,10 +286,6 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
     }
   }
 
-  navSearchHelp() {
-    this.router.navigate(['/search-help']);
-  }
-
   publishDocument() {
     this.dialogService.addDialog(ConfirmComponent,
       {
@@ -243,7 +315,8 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
                   this.loading = false;
                   this.canUnpublish = false;
                   this.canPublish = false;
-                  this.onSubmit();
+                  // this.onSubmit();
+                  // TODO: Reload
                 }
               );
           } else {
@@ -282,7 +355,8 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
                   this.loading = false;
                   this.canUnpublish = false;
                   this.canPublish = false;
-                  this.onSubmit();
+                  // this.onSubmit();
+                  // TODO
                 }
               );
           } else {
@@ -315,141 +389,12 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
             this.loading = false;
             return Promise.all(itemsToDelete).then(() => {
               // Reload main page.
-              this.onSubmit();
+              // this.onSubmit();
+              // TODO
             });
           }
           this.loading = false;
         }
       );
-  }
-
-  public onSubmit() {
-    // dismiss any open snackbar
-    // if (this.snackBarRef) { this.snackBarRef.dismiss(); }
-
-    // NOTE: Angular Router doesn't reload page on same URL
-    // REF: https://stackoverflow.com/questions/40983055/how-to-reload-the-current-route-with-the-angular-2-router
-    // WORKAROUND: add timestamp to force URL to be different than last time
-
-    const encode = encodeURIComponent;
-    window['encodeURIComponent'] = (component: string) => {
-      return encode(component).replace(/[!'()*]/g, (c) => {
-        // Also encode !, ', (, ), and *
-        return '%' + c.charCodeAt(0).toString(16);
-      });
-    };
-
-    const params = this.terms.getParams();
-    params['ms'] = new Date().getMilliseconds();
-    params['dataset'] = this.terms.dataset;
-    params['currentPage'] = this.tableParams.currentPage = 1;
-    params['sortBy'] = this.tableParams.sortBy = '-datePosted';
-    params['keywords'] = encode(this.tableParams.keywords = this.tableParams.keywords || '').replace(/\(/g, '%28').replace(/\)/g, '%29');
-    params['pageSize'] = this.tableParams.pageSize = 10;
-
-    this.router.navigate(['p', this.currentProject._id, 'project-documents', params]);
-  }
-
-  setRowData() {
-    let documentList = [];
-    if (this.documents && this.documents.length > 0) {
-      this.documents.forEach(document => {
-        documentList.push(
-          {
-            displayName: document.displayName,
-            documentFileName: document.documentFileName,
-            datePosted: document.datePosted,
-            status: document.read.includes('public') ? 'Published' : 'Not Published',
-            type: document.type,
-            milestone: document.milestone,
-            _id: document._id,
-            project: document.project,
-            read: document.read
-          }
-        );
-      });
-      this.documentTableData = new TableObject(
-        DocumentTableRowsComponent,
-        documentList,
-        this.tableParams
-      );
-    }
-  }
-
-  setColumnSort(column) {
-    if (this.tableParams.sortBy.charAt(0) === '+') {
-      this.tableParams.sortBy = '-' + column;
-    } else {
-      this.tableParams.sortBy = '+' + column;
-    }
-    this.getPaginatedDocs(this.tableParams.currentPage);
-  }
-
-  isEnabled(button) {
-    switch (button) {
-      case 'copyLink':
-        return this.selectedCount === 1;
-      case 'publish':
-        return this.selectedCount > 0 && this.canPublish;
-      case 'unpublish':
-        return this.selectedCount > 0 && this.canUnpublish;
-      default:
-        return this.selectedCount > 0;
-    }
-  }
-
-  updateSelectedRow(count) {
-    this.selectedCount = count;
-    this.setPublishUnpublish();
-  }
-
-  setPublishUnpublish() {
-    this.canPublish = false;
-    this.canUnpublish = false;
-    for (let document of this.documentTableData.data) {
-      if (document.checkbox) {
-        if (document.read.includes('public')) {
-          this.canUnpublish = true;
-        } else {
-          this.canPublish = true;
-        }
-      }
-
-      if (this.canPublish && this.canUnpublish) {
-        return;
-      }
-    }
-  }
-
-  getPaginatedDocs(pageNumber) {
-    // Go to top of page after clicking to a different page.
-    window.scrollTo(0, 0);
-    this.loading = true;
-
-    this.tableParams = this.tableTemplateUtils.updateTableParams(this.tableParams, pageNumber, this.tableParams.sortBy);
-
-    this.searchService.getSearchResults(
-      this.tableParams.keywords || '',
-      'Document',
-      [{ 'name': 'project', 'value': this.currentProject._id }],
-      pageNumber,
-      this.tableParams.pageSize,
-      this.tableParams.sortBy,
-      '[documentSource]=PROJECT',
-      true)
-      .takeUntil(this.ngUnsubscribe)
-      .subscribe((res: any) => {
-        this.tableParams.totalListItems = res[0].data.meta[0].searchResultsTotal;
-        this.documents = res[0].data.searchResults;
-        this.tableTemplateUtils.updateUrl(this.tableParams.sortBy, this.tableParams.currentPage, this.tableParams.pageSize, null, this.tableParams.keywords || '');
-        this.setRowData();
-        this.loading = false;
-        this._changeDetectionRef.detectChanges();
-      });
-  }
-
-  ngOnDestroy() {
-    this.ngUnsubscribe.next();
-    this.ngUnsubscribe.complete();
   }
 }

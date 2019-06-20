@@ -36,6 +36,7 @@ export class Project {
   decisionDate: String;
   duration: String;
   // TODO: directoryStructure
+  directoryStructure: String;
   eaoMember: String;
   epicProjectID: Number;
   fedElecDist: String;
@@ -137,6 +138,7 @@ export class Project {
     this.status              = obj && obj.status              || undefined;
     this.substitution        = obj && obj.substitution        || undefined;
     this.updatedBy           = obj && obj.updatedBy           || undefined;
+    this.directoryStructure           = obj && obj.directoryStructure           || undefined;
     this.read                = obj && obj.read                || undefined;
     this.write               = obj && obj.write               || undefined;
     this.delete              = obj && obj.delete              || undefined;
