@@ -1,11 +1,19 @@
 <nav *ngIf="!loading" class="action-container" aria-label="breadcrumb">
   <div *ngIf="!isEditing">
-    <ol class="breadcrumb">
+    <ol *ngIf="navigationObject == null" class="breadcrumb">
       <li class="breadcrumb-item" aria-current="page">
         <a [routerLink]="['/orgs']">Organizations</a>
       </li>
       <li class="breadcrumb-item active" aria-current="page">
         Add
+      </li>
+    </ol>
+    <ol *ngIf="navigationObject" class="breadcrumb">
+      <li class="breadcrumb-item" *ngFor="let breadcrumb of navigationObject.breadcrumbs; let i = index;">
+        <a [routerLink] (click)="navigationStackUtils.navigateBreadcrumb(breadcrumb, i, router)">{{breadcrumb.label}}</a>
+      </li>
+      <li class="breadcrumb-item active" aria-current="page">
+        Add Organization
       </li>
     </ol>
   </div>
