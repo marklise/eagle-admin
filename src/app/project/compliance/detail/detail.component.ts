@@ -37,8 +37,27 @@ export class ComplianceDetailComponent implements OnInit, OnDestroy {
       .takeUntil(this.ngUnsubscribe)
       .subscribe((res: any) => {
         this.document = res.compliance.data;
+        let self = this;
+
+        // TODO
+        // Change this to download each item separately and then push the thumb into it's spot on the page
+        // appropriately
+        this.api.downloadElementResource('5d5f6a5979348a3e48673537')
+        .then(function(item) {
+          self.document.elements.map(z => {
+            self._changeDetectionRef.detectChanges();
+            const reader = new FileReader();
+            reader.readAsDataURL(item);
+            reader.onloadend = function() {
+              // result includes identifier 'data:image/png;base64,' plus the base64 data
+              z.src = reader.result;
+            };
+          });
+        });
+  
         this._changeDetectionRef.detectChanges();
       });
+
   }
 
   download(item) {

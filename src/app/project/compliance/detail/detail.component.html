@@ -42,14 +42,15 @@
         <div *ngIf='element.type === "photo"' class="mr-2">
           <div>&nbsp;</div>
           <div>Photos:</div>{{element._id}}
+          <img *ngIf="element.src" [src]="element.src"/>
         </div>
         <div *ngIf='element.type === "video"' class="mr-2">
           <div>&nbsp;</div>
-          <div>Videos:</div>{{element.uri}}
+          <div>Videos:</div>{{element._id}}
         </div>
         <div *ngIf='element.type === "voice"' class="mr-2">
           <div>&nbsp;</div>
-          <div>Voice Recordings:</div>{{element.uri}}
+          <div>Voice Recordings:</div>{{element._id}}
         </div>
         <div *ngIf='element.type === "text"' class="mr-2">
           <div>&nbsp;</div>

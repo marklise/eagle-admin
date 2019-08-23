@@ -800,6 +800,11 @@ export class ApiService {
     return this.http.get<Blob>(this.pathAPI + '/' + queryString, { responseType: 'blob' as 'json' }).toPromise();
   }
 
+  public downloadElementResource(id: string): Promise<Blob> {
+    const queryString = `inspection/element/${id}`;
+    return this.http.get<Blob>(this.pathAPI + '/' + queryString, { responseType: 'blob' as 'json' }).toPromise();
+  }
+
   public async downloadDocument(document: Document): Promise<void> {
     const blob = await this.downloadResource(document._id);
     let filename;
