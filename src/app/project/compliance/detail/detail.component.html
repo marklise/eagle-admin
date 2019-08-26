@@ -40,32 +40,27 @@
       <h3 for="tags">Elements: </h3>
       <div *ngFor="let element of document.elements">
         <div *ngIf='element.type === "photo"' class="mr-2">
-          <div>&nbsp;</div>
-          <div>Photos:</div>{{element._id}}
-          <img *ngIf="element.src" [src]="element.src"/>
+          <img class="img-thumbnail" *ngIf="element.src" [src]="element.src" (click)='api.downloadElementResource(element)'/>
+          <div>Coords: [{{element.geo.latitude}},{{element.geo.longitude}}]</div>
         </div>
         <div *ngIf='element.type === "video"' class="mr-2">
-          <div>&nbsp;</div>
-          <div>Videos:</div>{{element._id}}
+          <i class="img-thumbnail material-icons mr-3" (click)='api.downloadElementResource(element)'>video_library</i>
+          <div>Coords: [{{element.geo.latitude}},{{element.geo.longitude}}]</div>
         </div>
         <div *ngIf='element.type === "voice"' class="mr-2">
-          <div>&nbsp;</div>
-          <div>Voice Recordings:</div>{{element._id}}
+          <i class="img-thumbnail material-icons mr-3" (click)='api.downloadElementResource(element)'>settings_voice</i>
+          <div>Coords: [{{element.geo.latitude}},{{element.geo.longitude}}]</div>
         </div>
         <div *ngIf='element.type === "text"' class="mr-2">
-          <div>&nbsp;</div>
-          <div>
-            Name: {{element.text.name}}
+          <div class="card">
+            <div class="card-body">
+              <h5 class="card-title mb-2">{{element.text.name}}</h5>
+              <h6 class="card-subtitle mb-2 text-muted">{{element.text.title}}</h6>
+              <h6 class="card-subtitle">{{element.text.requirement}}</h6>
+              <p class="card-text">{{element.text.description}}</p>
           </div>
-          <div>
-            Title: {{element.text.title}}
-          </div>
-          <div>
-            Requirement: {{element.text.requirement}}
-          </div>
-          <div>
-            Description: {{element.text.description}}
-          </div>
+        </div>
+        <div>Coords: [{{element.geo.latitude}},{{element.geo.longitude}}]</div>
         </div>
       </div>
     </div>

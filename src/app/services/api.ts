@@ -800,11 +800,6 @@ export class ApiService {
     return this.http.get<Blob>(this.pathAPI + '/' + queryString, { responseType: 'blob' as 'json' }).toPromise();
   }
 
-  public downloadElementResource(id: string): Promise<Blob> {
-    const queryString = `inspection/element/${id}`;
-    return this.http.get<Blob>(this.pathAPI + '/' + queryString, { responseType: 'blob' as 'json' }).toPromise();
-  }
-
   public async downloadDocument(document: Document): Promise<void> {
     const blob = await this.downloadResource(document._id);
     let filename;
@@ -858,6 +853,35 @@ export class ApiService {
     }
     filename = encode(filename).replace(/\(/g, '%28').replace(/\)/g, '%29').replace(/\\/g, '_').replace(/\//g, '_');
     window.open('/api/document/' + document._id + '/fetch/' + filename, '_blank');
+  }
+
+  public downloadElementThumbnail(id: string): Promise<Blob> {
+    const queryString = `inspection/element/${id}?thumbnail=true`;
+    return this.http.get<Blob>(this.pathAPI + '/' + queryString, { responseType: 'blob' as 'json' }).toPromise();
+  }
+
+  public async openElementResource(element: any): Promise<void> {
+    let filename = element.internalURL.substring(element.internalURL.lastIndexOf('/') + 1);
+    window.open(`/api/inspection/element/${element._id}/${filename}`, '_blank');
+  }
+
+  public async downloadElementResource(element: any): Promise<void> {
+    let filename = element.internalURL.substring(element.internalURL.lastIndexOf('/') + 1);
+    const queryString = `inspection/element/${element._id}?filename=${filename}`;
+    let blob = await this.http.get<Blob>(this.pathAPI + '/' + queryString, { responseType: 'blob' as 'json' }).toPromise();
+    if (this.isMS) {
+      window.navigator.msSaveBlob(blob, filename);
+    } else {
+      const url = window.URL.createObjectURL(blob);
+      const a = window.document.createElement('a');
+      window.document.body.appendChild(a);
+      a.setAttribute('style', 'display: none');
+      a.href = url;
+      a.download = filename;
+      a.click();
+      window.URL.revokeObjectURL(url);
+      a.remove();
+    }
   }
 
   //
