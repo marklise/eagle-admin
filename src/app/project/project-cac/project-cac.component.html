@@ -23,23 +23,21 @@
 
 <!-- CAC EXISTS -->
 <div *ngIf="currentProject && currentProject.projectCAC" class="container-fluid-padding">
-  <div>
-    <div class='input-group-prepend'>
+  <div class="row">
+    <div class='input-group-prepend col-10'>
       <button (click)="selectAction('selectAll')" class="btn btn-outline-secondary mr-1" type="button" id="button-sa"><i
           class="material-icons">select_all</i>Select
         All</button>
-      <button (click)="selectAction('add')" class="btn btn-outline-secondary mr-1" type="button" id="button-a">
-        <i class="material-icons">add</i>Add User
-      </button>
-      <a *ngIf='currentProject' class="upload-docs" [ngClass]="{'active': currentProject._id === 'activity'}"
-        [routerLink]="['/p', currentProject._id, 'project-groups', 'select']">
-      </a>
       <button (click)="selectAction('delete')" class="btn btn-outline-secondary mr-1" [disabled]="!isEnabled('delete')"
-        type="button" id="button-d"><i class="material-icons">delete</i>Delete User</button>
+        type="button" id="button-d"><i class="material-icons">delete</i>Remove Member</button>
       <button (click)="selectAction('export')" class="btn btn-outline-secondary mr-1" [disabled]="!isEnabled('export')"
         type="button" id="button-ex"><i class="material-icons">import_export</i>Export</button>
       <button (click)="selectAction('copyEmail')" class="btn btn-outline-secondary mr-1" [disabled]="!isEnabled('copyEmail')"
         type="button" id="button-ce"><i class="material-icons">import_export</i>Copy Emails</button>
+    </div>
+    <div class='input-group-prepend col-2'>
+      <button (click)="selectAction('deleteCAC')" class="btn btn-outline-secondary mr-1 pull-right"
+        type="button" id="button-ce">Delete CAC</button>
     </div>
   </div>
   <br>

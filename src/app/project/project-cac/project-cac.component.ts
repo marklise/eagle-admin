@@ -71,14 +71,6 @@ export class ProjectCACComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.currentProject = this.storageService.state.currentProject.data;
 
-    console.log("DATA:", this.currentProject);
-    // this.route.params
-    //   .takeUntil(this.ngUnsubscribe)
-    //   .subscribe(params => {
-    //     this.tableParams = this.tableTemplateUtils.getParamsFromUrl(params);
-    //     this.tableParams.sortBy = '-email';
-    //   });
-
     this.route.data
       .takeUntil(this.ngUnsubscribe)
       .subscribe((data: any) => {
@@ -178,6 +170,10 @@ export class ProjectCACComponent implements OnInit, OnDestroy {
         this.createCAC();
         break;
       }
+      case 'deleteCAC': {
+        this.deleteCAC();
+        break;
+      }
       case 'copyEmail':
         this.copyEmail();
         break;
@@ -201,9 +197,6 @@ export class ProjectCACComponent implements OnInit, OnDestroy {
         this.selectedCount = someSelected ? 0 : this.tableData.data.length;
         this._changeDetectionRef.detectChanges();
         break;
-      case 'add':
-        this.addNewCACMember();
-        break;
       case 'delete':
         this.deleteCACMember();
         break;
@@ -211,6 +204,35 @@ export class ProjectCACComponent implements OnInit, OnDestroy {
         this.exportItems();
         break;
     }
+  }
+
+  private deleteCAC() {
+    this.dialogService.addDialog(ConfirmComponent,
+      {
+        title: 'Deleting this list will be a permanent action.',
+        okOnly: false,
+        message: 'Are you sure you want to delete the project Community Advisory Committee from this project?'
+      }, {
+        backdropColor: 'rgba(0, 0, 0, 0.5)'
+      })
+      .takeUntil(this.ngUnsubscribe)
+      .subscribe(
+        isConfirmed => {
+          if (isConfirmed) {
+            this.projectService.deleteCAC(this.currentProject._id).toPromise()
+            .then(() => {
+              // Force reload because caching will return the non-updated object.
+              this.router.routeReuseStrategy.shouldReuseRoute = function () {
+                return false;
+              };
+              this.onSubmit();
+            })
+            .catch((error) => {
+              alert('Failed to remove CAC:' + error);
+            });
+          }
+        }
+      );
   }
 
   private createCAC() {
@@ -225,10 +247,6 @@ export class ProjectCACComponent implements OnInit, OnDestroy {
     .catch((error) => {
       alert('Failed to create CAC:' + error);
     });
-  }
-
-  private addNewCACMember() {
-    alert('TBD');
   }
 
   async deleteCACMember() {
