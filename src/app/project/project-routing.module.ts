@@ -211,7 +211,8 @@ const routes: Routes = [
         path: 'project-cac',
         component: ProjectCACComponent,
         resolve: {
-          cacMembers: ProjectCACResolver
+          cacMembers: ProjectCACResolver,
+          project: FullProjectResolver
         }
       },
       {

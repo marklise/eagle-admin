@@ -32,6 +32,7 @@ export class ProjectCACComponent implements OnInit, OnDestroy {
   public tableData: TableObject;
   public selectedCount = 0;
   public cacMembers;
+  public projectCAC = false;
   public tableColumns: any[] = [
     {
       name: '',
@@ -71,10 +72,15 @@ export class ProjectCACComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.currentProject = this.storageService.state.currentProject.data;
 
+    this.loading = true;
+
     this.route.data
       .takeUntil(this.ngUnsubscribe)
       .subscribe((data: any) => {
         if (data) {
+          if (data.project && data.project[0].data.meta && data.project[0].data.meta.length > 0) {
+            this.projectCAC = data.project[0].data.searchResults[0].projectCAC;
+          }
           if (data.cacMembers && data.cacMembers[0].data.meta && data.cacMembers[0].data.meta.length > 0) {
             this.tableParams.totalListItems = data.cacMembers[0].data.meta[0].searchResultsTotal;
             this.cacMembers = data.cacMembers[0].data.searchResults;
@@ -207,6 +213,7 @@ export class ProjectCACComponent implements OnInit, OnDestroy {
   }
 
   private deleteCAC() {
+    const self = this;
     this.dialogService.addDialog(ConfirmComponent,
       {
         title: 'Deleting this list will be a permanent action.',
@@ -219,15 +226,13 @@ export class ProjectCACComponent implements OnInit, OnDestroy {
       .subscribe(
         isConfirmed => {
           if (isConfirmed) {
+            this.loading = true;
             this.projectService.deleteCAC(this.currentProject._id).toPromise()
             .then(() => {
-              // Force reload because caching will return the non-updated object.
-              this.router.routeReuseStrategy.shouldReuseRoute = function () {
-                return false;
-              };
-              this.onSubmit();
+              setTimeout(() => self.onSubmit(), 2000);
             })
             .catch((error) => {
+              this.loading = false;
               alert('Failed to remove CAC:' + error);
             });
           }
@@ -236,15 +241,14 @@ export class ProjectCACComponent implements OnInit, OnDestroy {
   }
 
   private createCAC() {
+    const self = this;
+    this.loading = true;
     this.projectService.createCAC(this.currentProject._id).toPromise()
     .then(() => {
-      // Force reload because caching will return the non-updated object.
-      this.router.routeReuseStrategy.shouldReuseRoute = function () {
-        return false;
-      };
-      this.onSubmit();
+      setTimeout(() => self.onSubmit(), 2000);
     })
     .catch((error) => {
+      this.loading = false;
       alert('Failed to create CAC:' + error);
     });
   }

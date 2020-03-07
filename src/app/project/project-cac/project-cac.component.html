@@ -9,9 +9,11 @@
     <li class="breadcrumb-item active" aria-current="page">CAC</li>
   </ol>
 </nav>
-
+<div class="spinner-container" *ngIf="loading">
+  <div class="spinner-new rotating"></div>
+</div>
 <!-- NO CAC EXISTS -->
-<div *ngIf="currentProject && !currentProject.projectCAC" class="container-fluid-padding">
+<div *ngIf="!projectCAC" class="container-fluid-padding">
   <p>No Project CAC has been added to this Project - Click the 'Create Project CAC' button to add one.</p>
   <button
     (click)="selectAction('createCAC')"
@@ -22,7 +24,7 @@
 
 
 <!-- CAC EXISTS -->
-<div *ngIf="currentProject && currentProject.projectCAC" class="container-fluid-padding">
+<div *ngIf="projectCAC" class="container-fluid-padding">
   <div class="row">
     <div class='input-group-prepend col-10'>
       <button (click)="selectAction('selectAll')" class="btn btn-outline-secondary mr-1" type="button" id="button-sa"><i
